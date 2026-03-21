@@ -61,7 +61,27 @@ export function FlashcardPanel() {
   }
 
   const currentCard = deck[index];
-  const progress = ((index + 1) / deck.length) * 100;
+  const progress = deck.length > 0 ? ((index + 1) / deck.length) * 100 : 0;
+
+  if (!currentCard) {
+    return (
+      <div
+        style={{
+          padding: '32px',
+          maxWidth: '860px',
+          margin: '0 auto',
+          width: '100%',
+          textAlign: 'center',
+          paddingTop: '80px',
+        }}
+      >
+        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+        <p style={{ fontSize: '16px', color: 'var(--muted)' }}>
+          Đang tải thẻ...
+        </p>
+      </div>
+    );
+  }
 
   function handleFlip() {
     setIsFlipped(!isFlipped);
