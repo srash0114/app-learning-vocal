@@ -6,9 +6,10 @@ import { NavTabs } from './NavTabs';
 import { AddWordsPanel } from './AddWordsPanel';
 import { FlashcardPanel } from './FlashcardPanel';
 import { QuizPanel } from './QuizPanel';
+import { FillQuizPanel } from './FillQuizPanel';
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<'add' | 'flashcard' | 'quiz'>('add');
+  const [activeTab, setActiveTab] = useState<'add' | 'flashcard' | 'quiz' | 'fill'>('add');
 
   return (
     <div
@@ -27,6 +28,7 @@ export function App() {
         {activeTab === 'add' && <AddWordsPanel />}
         {activeTab === 'flashcard' && <FlashcardPanel />}
         {activeTab === 'quiz' && <QuizPanel onTabChange={setActiveTab} />}
+        {activeTab === 'fill' && <FillQuizPanel onTabChange={setActiveTab} />}
       </main>
     </div>
   );

@@ -4,6 +4,44 @@ import { useState } from 'react';
 import { useWords } from '@/lib/context';
 import { useToast } from '@/lib/toast-context';
 import { AILookupResponse, Word } from '@/lib/types';
+import { speakWord } from '@/lib/speak';
+
+const wordListStyles = `
+  .word-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px;
+    padding: 12px 14px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .word-row:hover {
+    background: rgba(110,231,183,0.05);
+    border-color: rgba(110,231,183,0.2);
+  }
+  .word-info {
+    flex: 1;
+    min-width: 0;
+    border-left: 2px solid #6EE7B7;
+    padding-left: 12px;
+  }
+  .word-name { font-family: var(--font-inter),sans-serif; font-size: 15px; font-weight: 700; color: #e8eaf2; word-break: break-word; }
+  .word-phonetic { font-size: 12px; color: #818CF8; font-style: italic; margin-top: 2px; }
+  .word-meaning-mobile { font-size: 12px; color: rgba(232,234,242,0.5); margin-top: 4px; line-height: 1.45; word-break: break-word; }
+  .word-side {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 5px;
+    flex-shrink: 0;
+    width: 90px;
+  }
+  .word-type { font-size: 10px; padding: 4px 8px; border-radius: 7px; background: rgba(129,140,248,0.1); color: #818CF8; font-weight: 600; text-align: center; width: 100%; word-break: break-word; line-height: 1.4; }
+  .word-actions { display: flex; align-items: center; gap: 5px; }
+`;
+
 
 export function AddWordsPanel() {
   const { words, addWord, deleteWord, bulkAddWords } = useWords();
@@ -125,6 +163,7 @@ export function AddWordsPanel() {
 
   return (
     <div style={{ padding: '28px 28px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
+      <style>{wordListStyles}</style>
 
       {/* ── Single word lookup ── */}
       <Section label="Tra từ bằng AI">
@@ -204,6 +243,7 @@ export function AddWordsPanel() {
                     <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '28px', fontWeight: 800, color: '#e8eaf2', letterSpacing: '-0.5px' }}>
                       {pendingWord.word}
                     </div>
+                    <SpeakButton word={pendingWord.word} />
                     <div style={{ fontSize: '14px', color: '#818CF8', fontStyle: 'italic' }}>
                       {pendingWord.phonetic}
                     </div>
@@ -289,82 +329,33 @@ export function AddWordsPanel() {
             {[...words].reverse().map((w, ri) => {
               const i = words.length - 1 - ri;
               return (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '14px',
-                    background: 'rgba(255,255,255,0.03)',
-                    border: '1px solid rgba(255,255,255,0.07)',
-                    borderRadius: '12px',
-                    padding: '14px 16px',
-                    transition: 'background 0.15s, border-color 0.15s',
-                  }}
-                  onMouseEnter={e => {
-                    const el = e.currentTarget as HTMLDivElement;
-                    el.style.background = 'rgba(110,231,183,0.05)';
-                    el.style.borderColor = 'rgba(110,231,183,0.2)';
-                  }}
-                  onMouseLeave={e => {
-                    const el = e.currentTarget as HTMLDivElement;
-                    el.style.background = 'rgba(255,255,255,0.03)';
-                    el.style.borderColor = 'rgba(255,255,255,0.07)';
-                  }}
-                >
-                  {/* Accent bar + word */}
-                  <div style={{ borderLeft: '2px solid #6EE7B7', paddingLeft: '12px', minWidth: 0 }}>
-                    <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '16px', fontWeight: 700, color: '#e8eaf2' }}>
-                      {w.word}
-                    </div>
-                    <div style={{ fontSize: '12px', color: '#818CF8', fontStyle: 'italic', marginTop: '1px' }}>
-                      {w.phonetic}
+                <div key={i} className="word-row">
+                  {/* Cột trái */}
+                  <div className="word-info">
+                    <div className="word-name">{w.word}</div>
+                    <div className="word-phonetic">{w.phonetic}</div>
+                    <div className="word-meaning-mobile">{w.meaning}</div>
+                  </div>
+
+                  {/* Cột phải */}
+                  <div className="word-side">
+                    <div className="word-type">{w.type}</div>
+                    <div className="word-actions">
+                      <SpeakButton word={w.word} />
+                      <button
+                        onClick={e => { e.stopPropagation(); deleteWord(i); showToast('🗑 Đã xóa "' + w.word + '"'); }}
+                        style={{
+                          background: 'transparent', color: 'rgba(248,113,113,0.6)',
+                          border: '1px solid rgba(248,113,113,0.2)', height: '30px', padding: '0 10px',
+                          fontSize: '11px', borderRadius: '7px', cursor: 'pointer', transition: 'all 0.15s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.5)'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(248,113,113,0.6)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.2)'; e.currentTarget.style.background = 'transparent'; }}
+                      >
+                        Xóa
+                      </button>
                     </div>
                   </div>
-
-                  {/* Meaning */}
-                  <div style={{ flex: 1, fontSize: '13px', color: 'rgba(232,234,242,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {w.meaning}
-                  </div>
-
-                  {/* Type badge */}
-                  <div style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', background: 'rgba(129,140,248,0.1)', color: '#818CF8', fontWeight: 600, whiteSpace: 'nowrap' }}>
-                    {w.type}
-                  </div>
-
-                  {/* Delete */}
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      deleteWord(i);
-                      showToast('🗑 Đã xóa "' + w.word + '"');
-                    }}
-                    style={{
-                      background: 'transparent',
-                      color: 'rgba(248,113,113,0.6)',
-                      border: '1px solid rgba(248,113,113,0.2)',
-                      padding: '5px 10px',
-                      fontSize: '11px',
-                      borderRadius: '7px',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s',
-                      flexShrink: 0,
-                    }}
-                    onMouseEnter={e => {
-                      const el = e.currentTarget;
-                      el.style.color = '#f87171';
-                      el.style.borderColor = 'rgba(248,113,113,0.5)';
-                      el.style.background = 'rgba(248,113,113,0.08)';
-                    }}
-                    onMouseLeave={e => {
-                      const el = e.currentTarget;
-                      el.style.color = 'rgba(248,113,113,0.6)';
-                      el.style.borderColor = 'rgba(248,113,113,0.2)';
-                      el.style.background = 'transparent';
-                    }}
-                  >
-                    Xóa
-                  </button>
                 </div>
               );
             })}
@@ -461,6 +452,32 @@ function GhostButton({ onClick, children }: { onClick: () => void; children: Rea
       onMouseLeave={e => { (e.currentTarget).style.borderColor = 'rgba(255,255,255,0.1)'; (e.currentTarget).style.color = 'rgba(232,234,242,0.6)'; }}
     >
       {children}
+    </button>
+  );
+}
+
+function SpeakButton({ word }: { word: string }) {
+  return (
+    <button
+      onClick={e => { e.stopPropagation(); speakWord(word); }}
+      title="Nghe phát âm"
+      style={{
+        background: 'rgba(110,231,183,0.08)',
+        border: '1px solid rgba(110,231,183,0.2)',
+        borderRadius: '7px',
+        height: '30px',
+        minWidth: '40px',
+        padding: '0 10px',
+        cursor: 'pointer',
+        fontSize: '13px',
+        lineHeight: 1,
+        flexShrink: 0,
+        transition: 'all 0.15s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(110,231,183,0.18)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'rgba(110,231,183,0.08)'; }}
+    >
+      🔊
     </button>
   );
 }

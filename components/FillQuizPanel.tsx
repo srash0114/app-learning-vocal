@@ -1,15 +1,12 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useWords } from '@/lib/context';
 import { Word } from '@/lib/types';
-import { speakWord } from '@/lib/speak';
 
 function shuffle<T>(arr: T[]): T[] {
   return [...arr].sort(() => Math.random() - 0.5);
 }
-
-const OPTION_LABELS = ['A', 'B', 'C', 'D'];
 
 type FilterOption = 'all' | 'learning' | 'mastered';
 
@@ -25,11 +22,19 @@ const FILTER_OPTIONS: { id: FilterOption; label: string }[] = [
   { id: 'mastered', label: 'Đã thuộc' },
 ];
 
-interface QuizPanelProps {
+function blankOutWord(sentence: string, word: string): string {
+  // Replace all case-insensitive occurrences of the word with underscores
+  const escaped = word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return sentence.replace(new RegExp(escaped, 'gi'), '_____');
+}
+
+interface FillQuizPanelProps {
   onTabChange: (tab: 'add' | 'flashcard' | 'quiz' | 'fill') => void;
 }
 
-export function QuizPanel({ onTabChange }: QuizPanelProps) {
+type AnswerState = 'idle' | 'correct' | 'wrong';
+
+export function FillQuizPanel({ onTabChange }: FillQuizPanelProps) {
   const { words } = useWords();
 
   const [filter, setFilter] = useState<FilterOption>('all');
@@ -37,91 +42,93 @@ export function QuizPanel({ onTabChange }: QuizPanelProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [correct, setCorrect] = useState(0);
   const [wrong, setWrong] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  const [inputValue, setInputValue] = useState('');
+  const [answerState, setAnswerState] = useState<AnswerState>('idle');
   const [showModal, setShowModal] = useState(false);
+  const [hintCount, setHintCount] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Build quiz words whenever filter changes (or words list changes)
+  // Build quiz words when filter or word list changes
   useEffect(() => {
     const filtered = filterWords(words, filter);
-    if (filtered.length >= 4) {
-      const selected = shuffle([...filtered]).slice(0, Math.min(10, filtered.length));
+    if (filtered.length > 0) {
+      const selected = shuffle([...filtered]).slice(0, 10);
       setQuizWords(selected);
       setCurrentIndex(0);
       setCorrect(0);
       setWrong(0);
-      setAnswered(false);
-      setSelectedOption(null);
+      setInputValue('');
+      setAnswerState('idle');
       setShowModal(false);
     } else {
       setQuizWords([]);
     }
   }, [words.length, filter]);
 
-  if (words.length < 4) {
-    return (
-      <div style={{ padding: '32px', maxWidth: '680px', margin: '0 auto', width: '100%', textAlign: 'center', paddingTop: '80px' }}>
-        <div style={{ fontSize: '44px', marginBottom: '14px', opacity: 0.5 }}>◈</div>
-        <p style={{ fontSize: '15px', color: 'rgba(232,234,242,0.45)' }}>
-          Cần ít nhất 4 từ để làm bài kiểm tra!
-        </p>
-        <button
-          onClick={() => onTabChange('add')}
-          style={{
-            marginTop: '20px', padding: '12px 22px', borderRadius: '11px', border: 'none',
-            fontFamily: "var(--font-inter), sans-serif", fontSize: '13px', fontWeight: 700,
-            cursor: 'pointer', background: 'linear-gradient(135deg, #6EE7B7, #34d399)', color: '#0a0c10',
-          }}
-        >
-          Thêm từ ngay
-        </button>
-      </div>
-    );
+  // Focus input when question changes
+  useEffect(() => {
+    if (answerState === 'idle' && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [currentIndex, answerState]);
+
+  const currentWord = quizWords[currentIndex];
+  const progress = quizWords.length > 0 ? ((currentIndex + (answerState !== 'idle' ? 1 : 0)) / quizWords.length) * 100 : 0;
+
+  function handleSubmit() {
+    if (answerState !== 'idle' || !currentWord) return;
+    const trimmed = inputValue.trim().toLowerCase();
+    const expected = currentWord.word.toLowerCase();
+    if (trimmed === expected) {
+      setAnswerState('correct');
+      setCorrect(c => c + 1);
+      setTimeout(advance, 1200);
+    } else {
+      setAnswerState('wrong');
+      setWrong(w => w + 1);
+      setTimeout(advance, 1800);
+    }
   }
 
-  const currentQuestion = quizWords[currentIndex];
-  const progress = quizWords.length > 0 ? ((currentIndex + (answered ? 1 : 0)) / quizWords.length) * 100 : 0;
-
-  const options = useMemo(() => {
-    if (!currentQuestion) return [];
-    const wrongPool = words.filter(w => w.word !== currentQuestion.word);
-    const wrongs = shuffle(wrongPool).slice(0, 3);
-    return shuffle([currentQuestion, ...wrongs]);
-  }, [currentIndex, quizWords]);
-
-  function handleAnswer(chosenWord: string) {
-    if (answered) return;
-
-    setAnswered(true);
-    setSelectedOption(chosenWord);
-    if (chosenWord === currentQuestion.word) {
-      setCorrect(c => c + 1);
+  function advance() {
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= quizWords.length) {
+      setShowModal(true);
     } else {
-      setWrong(w => w + 1);
+      setCurrentIndex(nextIndex);
+      setInputValue('');
+      setAnswerState('idle');
+      setHintCount(0);
     }
+  }
 
-    setTimeout(() => {
-      const nextIndex = currentIndex + 1;
-      if (nextIndex >= quizWords.length) {
-        setShowModal(true);
-      } else {
-        setCurrentIndex(nextIndex);
-        setAnswered(false);
-        setSelectedOption(null);
-      }
-    }, 1200);
+  function handleHint() {
+    if (!currentWord || answerState !== 'idle') return;
+    const next = hintCount + 1;
+    if (next > currentWord.word.length) return;
+    setHintCount(next);
+    setInputValue(currentWord.word.slice(0, next));
+    inputRef.current?.focus();
   }
 
   function restartQuiz() {
     const filtered = filterWords(words, filter);
-    const selected = shuffle([...filtered]).slice(0, Math.min(10, filtered.length));
+    const selected = shuffle([...filtered]).slice(0, 10);
     setQuizWords(selected);
     setCurrentIndex(0);
     setCorrect(0);
     setWrong(0);
-    setAnswered(false);
-    setSelectedOption(null);
+    setInputValue('');
+    setAnswerState('idle');
     setShowModal(false);
+  }
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'Enter') {
+      if (answerState === 'idle') {
+        handleSubmit();
+      }
+    }
   }
 
   const resultCorrect = correct;
@@ -132,23 +139,28 @@ export function QuizPanel({ onTabChange }: QuizPanelProps) {
   if (percentage >= 75) grade = { label: 'Giỏi lắm!', color: '#6EE7B7', icon: '🌟' };
   if (percentage >= 90) grade = { label: 'Xuất sắc!', color: '#818CF8', icon: '🏆' };
 
+  // Input border/bg based on answer state
+  let inputBorder = 'rgba(255,255,255,0.15)';
+  let inputBg = 'rgba(255,255,255,0.05)';
+  let inputColor = '#e8eaf2';
+  if (answerState === 'correct') {
+    inputBorder = '#6EE7B7';
+    inputBg = 'rgba(110,231,183,0.1)';
+    inputColor = '#6EE7B7';
+  } else if (answerState === 'wrong') {
+    inputBorder = '#f87171';
+    inputBg = 'rgba(248,113,113,0.1)';
+    inputColor = '#f87171';
+  }
+
   return (
     <div style={{ position: 'relative' }}>
-      {/* ── Quiz screen ── */}
       <div style={{ padding: '28px', maxWidth: '620px', margin: '0 auto', width: '100%' }}>
 
-        {/* Stats row */}
+        {/* Header row */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-          <div style={{ fontSize: '12px', color: 'rgba(232,234,242,0.45)' }}>
-            {quizWords.length > 0 ? (
-              <>
-                Câu <strong style={{ color: '#e8eaf2' }}>{currentIndex + 1}</strong>
-                <span style={{ margin: '0 4px', opacity: 0.4 }}>/</span>
-                <strong style={{ color: '#e8eaf2' }}>{quizWords.length}</strong>
-              </>
-            ) : (
-              <span>Kiểm tra</span>
-            )}
+          <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '15px', fontWeight: 700, color: '#e8eaf2' }}>
+            Điền từ
           </div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <ScorePill icon="✅" label={`${correct}`} color="rgba(110,231,183,0.1)" textColor="#6EE7B7" small />
@@ -200,115 +212,200 @@ export function QuizPanel({ onTabChange }: QuizPanelProps) {
         {/* No match message */}
         {quizWords.length === 0 && (
           <div style={{ textAlign: 'center', paddingTop: '40px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px', opacity: 0.4 }}>◈</div>
+            <div style={{ fontSize: '36px', marginBottom: '12px', opacity: 0.4 }}>✏</div>
             <p style={{ fontSize: '14px', color: 'rgba(232,234,242,0.45)' }}>
-              Cần ít nhất 4 từ phù hợp với bộ lọc này để làm bài kiểm tra.
+              Không có từ nào phù hợp với bộ lọc này.
             </p>
           </div>
         )}
 
-        {/* Question card */}
-        {currentQuestion && (
+        {/* Question */}
+        {currentWord && !showModal && (
           <>
+            {/* Question counter */}
+            <div style={{ fontSize: '12px', color: 'rgba(232,234,242,0.4)', marginBottom: '16px' }}>
+              Câu <strong style={{ color: '#e8eaf2' }}>{currentIndex + 1}</strong>
+              <span style={{ margin: '0 4px', opacity: 0.4 }}>/</span>
+              <strong style={{ color: '#e8eaf2' }}>{quizWords.length}</strong>
+            </div>
+
+            {/* Question card */}
             <div
               style={{
-                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '20px', padding: '36px 32px', textAlign: 'center',
-                marginBottom: '16px', boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
+                background: 'rgba(255,255,255,0.03)',
+                border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: '20px',
+                padding: '32px',
+                marginBottom: '16px',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.25)',
               }}
             >
-              <div style={{ fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(232,234,242,0.3)', marginBottom: '14px', fontWeight: 700 }}>
-                Chọn nghĩa đúng của từ
-              </div>
-              <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: 'clamp(30px,5vw,52px)', fontWeight: 900, letterSpacing: '-1.5px', color: '#e8eaf2', lineHeight: 1 }}>
-                {currentQuestion.word}
-              </div>
-              <div style={{ color: '#818CF8', fontStyle: 'italic', fontSize: '16px', marginTop: '10px' }}>
-                {currentQuestion.phonetic}
-              </div>
-              <button
-                onClick={() => speakWord(currentQuestion.word)}
-                title="Nghe phát âm"
-                style={{
-                  marginTop: '14px',
-                  background: 'rgba(110,231,183,0.08)',
-                  border: '1px solid rgba(110,231,183,0.2)',
-                  borderRadius: '8px',
-                  padding: '6px 14px',
-                  cursor: 'pointer',
-                  fontSize: '15px',
-                  color: '#6EE7B7',
-                  transition: 'all 0.15s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(110,231,183,0.18)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(110,231,183,0.08)'; }}
-              >
-                🔊
-              </button>
-            </div>
-
-            {/* Options grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              {options.map((option, idx) => {
-                const isSelected = selectedOption === option.word;
-                const isCorrect = option.word === currentQuestion.word;
-
-                let bg = 'rgba(255,255,255,0.03)';
-                let border = 'rgba(255,255,255,0.09)';
-                let color = 'rgba(232,234,242,0.8)';
-                let labelBg = 'rgba(255,255,255,0.06)';
-                let labelColor = 'rgba(232,234,242,0.4)';
-
-                if (answered && isCorrect) {
-                  bg = 'rgba(110,231,183,0.1)'; border = '#6EE7B7'; color = '#6EE7B7';
-                  labelBg = 'rgba(110,231,183,0.2)'; labelColor = '#6EE7B7';
-                } else if (answered && isSelected && !isCorrect) {
-                  bg = 'rgba(248,113,113,0.1)'; border = '#f87171'; color = '#f87171';
-                  labelBg = 'rgba(248,113,113,0.2)'; labelColor = '#f87171';
-                }
-
+              {/* Label */}
+              {(() => {
+                const blanked = currentWord.example
+                  ? blankOutWord(currentWord.example, currentWord.word)
+                  : null;
+                const hasBlank = blanked !== null && blanked !== currentWord.example;
                 return (
-                  <button
-                    key={idx}
-                    onClick={() => handleAnswer(option.word)}
-                    disabled={answered}
-                    style={{
-                      background: bg, border: `1.5px solid ${border}`, borderRadius: '14px',
-                      padding: '16px', color, fontSize: '14px', lineHeight: 1.5,
-                      cursor: answered ? 'not-allowed' : 'pointer', textAlign: 'left',
-                      transition: 'all 0.18s', fontFamily: "var(--font-inter), sans-serif",
-                      display: 'flex', gap: '12px', alignItems: 'flex-start',
-                    }}
-                    onMouseEnter={e => {
-                      if (!answered) {
-                        e.currentTarget.style.border = '1.5px solid rgba(129,140,248,0.5)';
-                        e.currentTarget.style.background = 'rgba(129,140,248,0.07)';
-                        e.currentTarget.style.transform = 'translateY(-2px)';
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!answered) {
-                        e.currentTarget.style.border = '1.5px solid rgba(255,255,255,0.09)';
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
-                        e.currentTarget.style.transform = 'translateY(0)';
-                      }
-                    }}
-                  >
-                    <span
-                      style={{
-                        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
-                        width: '22px', height: '22px', borderRadius: '6px',
-                        background: labelBg, color: labelColor,
-                        fontSize: '10px', fontWeight: 800, flexShrink: 0, marginTop: '1px',
-                      }}
-                    >
-                      {OPTION_LABELS[idx]}
-                    </span>
-                    <span>{option.meaning}</span>
-                  </button>
+                  <div style={{ fontSize: '10px', letterSpacing: '3px', textTransform: 'uppercase', color: 'rgba(232,234,242,0.3)', marginBottom: '16px', fontWeight: 700 }}>
+                    {hasBlank ? 'Điền từ còn thiếu' : `Xác định đúng từ tiếng Anh (${currentWord.type})`}
+                  </div>
                 );
-              })}
+              })()}
+
+              {/* Meaning as question */}
+              <div
+                style={{
+                  fontFamily: "var(--font-inter), sans-serif",
+                  fontSize: 'clamp(16px,3vw,22px)',
+                  fontWeight: 700,
+                  color: '#e8eaf2',
+                  lineHeight: 1.5,
+                  marginBottom: '20px',
+                  textAlign: 'center',
+                }}
+              >
+                {currentWord.meaning}
+              </div>
+
+              {/* Example sentence with blank */}
+              {currentWord.example && (
+                <div
+                  style={{
+                    fontSize: '14px',
+                    color: 'rgba(232,234,242,0.5)',
+                    fontStyle: 'italic',
+                    lineHeight: 1.7,
+                    textAlign: 'center',
+                    marginBottom: '8px',
+                    padding: '0 8px',
+                  }}
+                >
+                  "{blankOutWord(currentWord.example, currentWord.word)}"
+                </div>
+              )}
+              {currentWord.example_vi && (
+                <div
+                  style={{
+                    fontSize: '12px',
+                    color: 'rgba(232,234,242,0.3)',
+                    textAlign: 'center',
+                    lineHeight: 1.6,
+                    marginBottom: '4px',
+                  }}
+                >
+                  {currentWord.example_vi}
+                </div>
+              )}
             </div>
+
+            {/* Input area */}
+            <div style={{ marginBottom: '12px' }}>
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={e => answerState === 'idle' && setInputValue(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Nhập từ tiếng Anh..."
+                readOnly={answerState !== 'idle'}
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  borderRadius: '12px',
+                  border: `1.5px solid ${inputBorder}`,
+                  background: inputBg,
+                  color: inputColor,
+                  fontSize: '16px',
+                  fontFamily: "var(--font-inter), sans-serif",
+                  fontWeight: 600,
+                  outline: 'none',
+                  transition: 'border-color 0.2s, background 0.2s',
+                  boxSizing: 'border-box',
+                }}
+              />
+            </div>
+
+            {/* Feedback message */}
+            {answerState === 'correct' && (
+              <div
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 16px', borderRadius: '10px',
+                  background: 'rgba(110,231,183,0.1)', border: '1px solid rgba(110,231,183,0.25)',
+                  color: '#6EE7B7', fontSize: '14px', fontWeight: 600,
+                  marginBottom: '12px',
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>✓</span> Đúng!
+              </div>
+            )}
+            {answerState === 'wrong' && (
+              <div
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 16px', borderRadius: '10px',
+                  background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.25)',
+                  color: '#f87171', fontSize: '14px', fontWeight: 600,
+                  marginBottom: '12px',
+                }}
+              >
+                <span style={{ fontSize: '16px' }}>✗</span>
+                <span>Sai! Đáp án đúng: <strong style={{ color: '#e8eaf2' }}>{currentWord.word}</strong></span>
+              </div>
+            )}
+
+            {/* Submit + Hint buttons */}
+            {answerState === 'idle' && (
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  onClick={handleHint}
+                  disabled={currentWord ? hintCount >= currentWord.word.length : true}
+                  title="Gợi ý thêm 1 chữ"
+                  style={{
+                    padding: '13px 16px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(251,191,36,0.25)',
+                    fontFamily: "var(--font-inter), sans-serif",
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    background: 'rgba(251,191,36,0.08)',
+                    color: '#fbbf24',
+                    transition: 'all 0.15s',
+                    flexShrink: 0,
+                    opacity: currentWord && hintCount >= currentWord.word.length ? 0.4 : 1,
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.15)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'rgba(251,191,36,0.08)'; }}
+                >
+                  💡 {hintCount > 0 ? `${hintCount}/${currentWord?.word.length}` : 'Gợi ý'}
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={inputValue.trim() === ''}
+                  style={{
+                    flex: 1,
+                    padding: '13px',
+                    borderRadius: '12px',
+                    border: 'none',
+                    fontFamily: "var(--font-inter), sans-serif",
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    cursor: inputValue.trim() === '' ? 'not-allowed' : 'pointer',
+                    background: inputValue.trim() === ''
+                      ? 'rgba(255,255,255,0.06)'
+                      : 'linear-gradient(135deg, #6EE7B7, #34d399)',
+                    color: inputValue.trim() === '' ? 'rgba(232,234,242,0.3)' : '#0a0c10',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { if (inputValue.trim() !== '') e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; }}
+                >
+                  Kiểm tra
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>
@@ -348,7 +445,7 @@ export function QuizPanel({ onTabChange }: QuizPanelProps) {
                 letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '20px',
               }}
             >
-              🎉 Hoàn thành bài kiểm tra
+              🎉 Hoàn thành điền từ
             </div>
 
             {/* Score */}
