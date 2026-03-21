@@ -180,6 +180,7 @@ export function AddWordsPanel() {
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '12px',
               padding: '13px 16px',
+              minWidth: 0,
               fontFamily: "'Instrument Sans', sans-serif",
               fontSize: '15px',
               color: 'var(--text)',
@@ -239,19 +240,18 @@ export function AddWordsPanel() {
               ) : (
                 <>
                   {/* Word + phonetic */}
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
                     <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '28px', fontWeight: 800, color: '#e8eaf2', letterSpacing: '-0.5px' }}>
                       {pendingWord.word}
                     </div>
                     <SpeakButton word={pendingWord.word} />
-                    <div style={{ fontSize: '14px', color: '#818CF8', fontStyle: 'italic' }}>
-                      {pendingWord.phonetic}
-                    </div>
-                    <div style={{ marginLeft: 'auto', padding: '3px 10px', borderRadius: '6px', background: 'rgba(251,191,36,0.12)', color: '#fbbf24', fontSize: '11px', fontWeight: 600 }}>
-                      {pendingWord.type}
-                    </div>
                   </div>
-
+                  <div style={{ fontSize: '14px', color: '#818CF8', fontStyle: 'italic' }}>
+                      {pendingWord.phonetic}
+                  </div>
+                  <div style={{ padding: '3px 10px', maxWidth: 'fit-content', borderRadius: '6px', background: 'rgba(251,191,36,0.12)', color: '#fbbf24', fontSize: '11px', fontWeight: 600, marginBottom: '14px' }}>
+                      {pendingWord.type}
+                  </div>
                   {/* Meaning */}
                   <div style={{ marginBottom: '12px' }}>
                     <FieldLabel>Nghĩa tiếng Việt</FieldLabel>
@@ -472,7 +472,7 @@ function SpeakButton({ word }: { word: string }) {
         fontSize: '13px',
         lineHeight: 1,
         flexShrink: 0,
-        transition: 'all 0.15s',
+        
       }}
       onMouseEnter={e => { e.currentTarget.style.background = 'rgba(110,231,183,0.18)'; }}
       onMouseLeave={e => { e.currentTarget.style.background = 'rgba(110,231,183,0.08)'; }}
