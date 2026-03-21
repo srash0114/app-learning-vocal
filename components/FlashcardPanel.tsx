@@ -21,7 +21,6 @@ export function FlashcardPanel() {
   // Initialize deck only when word count changes (add/remove), not on status updates
   useEffect(() => {
     if (words.length !== deckSize) {
-      // New words added or removed, reshuffle
       setDeck(shuffle([...words]));
       setIndex(0);
       setIsFlipped(false);
@@ -31,38 +30,11 @@ export function FlashcardPanel() {
 
   if (!words.length) {
     return (
-      <div
-        style={{
-          padding: '32px',
-          maxWidth: '860px',
-          margin: '0 auto',
-          width: '100%',
-          textAlign: 'center',
-          paddingTop: '80px',
-        }}
-      >
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🃏</div>
-        <p style={{ fontSize: '16px', color: 'var(--muted)' }}>
-          Bạn chưa có từ nào. Hãy thêm từ trước!
-        </p>
-        <button
-          onClick={() => window.location.hash = '#add'}
-          style={{
-            marginTop: '20px',
-            padding: '14px 22px',
-            borderRadius: '12px',
-            border: 'none',
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: '14px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            background: 'var(--accent)',
-            color: '#0d0f14',
-          }}
-        >
-          Thêm từ ngay
-        </button>
-      </div>
+      <EmptyState
+        icon="▣"
+        text="Chưa có từ nào. Hãy thêm từ trước!"
+        buttonText="Thêm từ ngay"
+      />
     );
   }
 
@@ -71,21 +43,7 @@ export function FlashcardPanel() {
 
   if (!currentCard) {
     return (
-      <div
-        style={{
-          padding: '32px',
-          maxWidth: '860px',
-          margin: '0 auto',
-          width: '100%',
-          textAlign: 'center',
-          paddingTop: '80px',
-        }}
-      >
-        <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
-        <p style={{ fontSize: '16px', color: 'var(--muted)' }}>
-          Đang tải thẻ...
-        </p>
-      </div>
+      <EmptyState icon="⏳" text="Đang tải thẻ…" />
     );
   }
 
@@ -102,14 +60,10 @@ export function FlashcardPanel() {
     const wordIndex = words.findIndex(w => w.word === currentCard.word);
 
     if (isEasy) {
-      if (wordIndex >= 0) {
-        deleteWord(wordIndex);
-      }
+      if (wordIndex >= 0) deleteWord(wordIndex);
       showToast('✨ Đã xóa từ này!');
     } else {
-      if (wordIndex >= 0) {
-        updateWordStatus(wordIndex, 'learning');
-      }
+      if (wordIndex >= 0) updateWordStatus(wordIndex, 'learning');
       showToast('💪 Tiếp tục cố lên!');
     }
 
@@ -119,66 +73,35 @@ export function FlashcardPanel() {
   }
 
   return (
-    <div
-      style={{
-        padding: '32px',
-        maxWidth: '860px',
-        margin: '0 auto',
-        width: '100%',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '24px',
-        }}
-      >
-        <div
-          style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: '18px',
-            fontWeight: 700,
-          }}
-        >
+    <div style={{ padding: '28px', maxWidth: '720px', margin: '0 auto', width: '100%' }}>
+
+      {/* Header row */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '15px', fontWeight: 700, color: '#e8eaf2' }}>
           Thẻ nhớ
         </div>
-        <div style={{ fontSize: '14px', color: 'var(--muted)' }}>
-          Thẻ <strong style={{ color: 'var(--text)' }}>{index + 1}</strong> /{' '}
-          <strong style={{ color: 'var(--text)' }}>{deck.length}</strong>
+        <div style={{ fontSize: '12px', color: 'rgba(232,234,242,0.4)' }}>
+          <strong style={{ color: '#e8eaf2' }}>{index + 1}</strong>
+          <span style={{ margin: '0 4px' }}>/</span>
+          <strong style={{ color: '#e8eaf2' }}>{deck.length}</strong>
         </div>
       </div>
 
-      <div style={{ marginBottom: '28px' }}>
+      {/* Progress bar */}
+      <div style={{ marginBottom: '24px', height: '3px', background: 'rgba(255,255,255,0.07)', borderRadius: '100px', overflow: 'hidden' }}>
         <div
           style={{
-            height: '4px',
-            background: 'var(--surface2)',
+            height: '100%',
             borderRadius: '100px',
-            overflow: 'hidden',
+            background: 'linear-gradient(90deg, #6EE7B7, #818CF8)',
+            width: `${progress}%`,
+            transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)',
           }}
-        >
-          <div
-            style={{
-              height: '100%',
-              borderRadius: '100px',
-              background: 'linear-gradient(90deg, var(--accent), var(--accent2))',
-              width: `${progress}%`,
-              transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1)',
-            }}
-          ></div>
-        </div>
+        />
       </div>
 
-      {/* Card */}
-      <div
-        style={{
-          perspective: '1400px',
-          marginBottom: '28px',
-          cursor: 'pointer',
-        }}
-      >
+      {/* Flip card */}
+      <div style={{ perspective: '1400px', marginBottom: '20px', cursor: 'pointer' }}>
         <div
           onClick={handleFlip}
           style={{
@@ -190,54 +113,48 @@ export function FlashcardPanel() {
             transition: 'transform 0.55s cubic-bezier(0.4,0,0.2,1)',
           }}
         >
-          {/* Front */}
+          {/* Front face */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              borderRadius: '22px',
+              borderRadius: '20px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               backfaceVisibility: 'hidden',
-              padding: '40px',
-              border: '1px solid var(--border)',
-              background: 'var(--surface)',
-              boxShadow: '0 0 0 1px rgba(110,231,183,0.1), 0 24px 60px rgba(0,0,0,0.4)',
               WebkitBackfaceVisibility: 'hidden',
+              padding: '36px',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
             }}
           >
             <div
               style={{
                 fontFamily: "var(--font-inter), sans-serif",
-                fontSize: 'clamp(36px,6vw,64px)',
+                fontSize: 'clamp(36px,6vw,60px)',
                 fontWeight: 800,
                 letterSpacing: '-1.5px',
-                color: 'var(--text)',
+                color: '#e8eaf2',
                 textAlign: 'center',
+                lineHeight: 1,
               }}
             >
               {currentCard.word}
             </div>
-            <div
-              style={{
-                fontSize: '18px',
-                color: 'var(--accent)',
-                fontStyle: 'italic',
-                marginTop: '10px',
-              }}
-            >
+            <div style={{ fontSize: '17px', color: '#818CF8', fontStyle: 'italic', marginTop: '12px' }}>
               {currentCard.phonetic}
             </div>
             <div
               style={{
                 marginTop: '14px',
-                padding: '4px 14px',
-                background: 'rgba(110,231,183,0.1)',
-                color: 'var(--accent)',
-                borderRadius: '100px',
-                fontSize: '12px',
+                padding: '4px 12px',
+                background: 'rgba(251,191,36,0.1)',
+                color: '#fbbf24',
+                borderRadius: '6px',
+                fontSize: '11px',
                 fontWeight: 600,
                 letterSpacing: '1px',
                 textTransform: 'uppercase',
@@ -245,46 +162,38 @@ export function FlashcardPanel() {
             >
               {currentCard.type}
             </div>
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '18px',
-                right: '22px',
-                fontSize: '12px',
-                color: 'var(--muted)',
-              }}
-            >
+            <div style={{ position: 'absolute', bottom: '16px', right: '18px', fontSize: '11px', color: 'rgba(232,234,242,0.25)' }}>
               Nhấn để xem nghĩa ↩
             </div>
           </div>
 
-          {/* Back */}
+          {/* Back face */}
           <div
             style={{
               position: 'absolute',
               inset: 0,
-              borderRadius: '22px',
+              borderRadius: '20px',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               backfaceVisibility: 'hidden',
-              transform: 'rotateY(180deg)',
-              padding: '40px',
-              border: '1px solid rgba(129,140,248,0.2)',
-              background: 'linear-gradient(135deg, #1a2535, #1e1a35)',
-              boxShadow: '0 0 0 1px rgba(129,140,248,0.2), 0 24px 60px rgba(0,0,0,0.4)',
               WebkitBackfaceVisibility: 'hidden',
+              transform: 'rotateY(180deg)',
+              padding: '36px',
+              background: 'linear-gradient(135deg, rgba(110,231,183,0.08), rgba(129,140,248,0.1))',
+              border: '1px solid rgba(129,140,248,0.25)',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(129,140,248,0.1)',
             }}
           >
             <div
               style={{
-                fontFamily: "'Syne',sans-serif",
-                fontSize: 'clamp(20px,3.5vw,34px)',
+                fontFamily: "'Syne', sans-serif",
+                fontSize: 'clamp(20px,3.5vw,32px)',
                 fontWeight: 700,
                 textAlign: 'center',
-                color: 'var(--text)',
-                lineHeight: 1.3,
+                color: '#e8eaf2',
+                lineHeight: 1.35,
               }}
             >
               {currentCard.meaning}
@@ -292,125 +201,135 @@ export function FlashcardPanel() {
             {currentCard.example && (
               <div
                 style={{
-                  fontSize: '14px',
-                  color: 'rgba(232,234,242,0.5)',
+                  fontSize: '13px',
+                  color: 'rgba(232,234,242,0.45)',
                   textAlign: 'center',
                   fontStyle: 'italic',
                   marginTop: '14px',
-                  lineHeight: 1.6,
-                  maxWidth: '480px',
+                  lineHeight: 1.7,
+                  maxWidth: '460px',
                 }}
               >
                 "{currentCard.example}"
               </div>
             )}
-            <div
-              style={{
-                position: 'absolute',
-                bottom: '18px',
-                right: '22px',
-                fontSize: '12px',
-                color: 'var(--muted)',
-              }}
-            >
+            <div style={{ position: 'absolute', bottom: '16px', right: '18px', fontSize: '11px', color: 'rgba(232,234,242,0.25)' }}>
               Nhấn để lật lại ↩
             </div>
           </div>
         </div>
       </div>
 
-      {/* Actions */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          gap: '12px',
-        }}
-      >
-        <button
+      {/* Action buttons */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', gap: '10px' }}>
+        {/* Hard */}
+        <RateButton
+          color="#f87171"
+          bgColor="rgba(248,113,113,0.08)"
+          borderColor="rgba(248,113,113,0.25)"
           onClick={() => handleRate(false)}
-          style={{
-            padding: '14px 22px',
-            borderRadius: '12px',
-            border: '1px solid rgba(248,113,113,0.3)',
-            fontFamily: "'Syne',sans-serif",
-            fontSize: '14px',
-            fontWeight: 700,
-            cursor: 'pointer',
-            background: 'rgba(248,113,113,0.1)',
-            color: 'var(--danger)',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            justifyContent: 'center',
-          }}
-          onMouseEnter={e => {
-            (e.target as HTMLButtonElement).style.background = 'rgba(248,113,113,0.2)';
-            (e.target as HTMLButtonElement).style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={e => {
-            (e.target as HTMLButtonElement).style.background = 'rgba(248,113,113,0.1)';
-            (e.target as HTMLButtonElement).style.transform = 'translateY(0)';
-          }}
         >
           😓 Còn khó
-        </button>
+        </RateButton>
+
+        {/* Flip */}
         <button
           onClick={handleFlip}
           style={{
-            padding: '14px 28px',
-            borderRadius: '12px',
-            border: '1px solid var(--border)',
-            fontFamily: "'Syne',sans-serif",
-            fontSize: '14px',
-            fontWeight: 700,
+            padding: '13px 22px',
+            borderRadius: '11px',
+            border: '1px solid rgba(255,255,255,0.1)',
+            fontFamily: "var(--font-inter), sans-serif",
+            fontSize: '13px',
+            fontWeight: 600,
             cursor: 'pointer',
-            background: 'var(--surface2)',
-            color: 'var(--text)',
-            transition: 'all 0.2s',
+            background: 'rgba(255,255,255,0.05)',
+            color: 'rgba(232,234,242,0.7)',
+            transition: 'all 0.15s',
+            whiteSpace: 'nowrap',
           }}
           onMouseEnter={e => {
-            (e.target as HTMLButtonElement).style.background = 'var(--border)';
-            (e.target as HTMLButtonElement).style.transform = 'translateY(-2px)';
+            e.currentTarget.style.background = 'rgba(255,255,255,0.09)';
+            e.currentTarget.style.color = '#e8eaf2';
           }}
           onMouseLeave={e => {
-            (e.target as HTMLButtonElement).style.background = 'var(--surface2)';
-            (e.target as HTMLButtonElement).style.transform = 'translateY(0)';
+            e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+            e.currentTarget.style.color = 'rgba(232,234,242,0.7)';
           }}
         >
           ↩ Lật thẻ
         </button>
-        <button
+
+        {/* Easy */}
+        <RateButton
+          color="#6EE7B7"
+          bgColor="rgba(110,231,183,0.08)"
+          borderColor="rgba(110,231,183,0.25)"
           onClick={() => handleRate(true)}
+        >
+          ✓ Thuộc rồi
+        </RateButton>
+      </div>
+    </div>
+  );
+}
+
+function RateButton({
+  color, bgColor, borderColor, onClick, children,
+}: {
+  color: string; bgColor: string; borderColor: string; onClick: () => void; children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '13px 20px',
+        borderRadius: '11px',
+        border: `1px solid ${borderColor}`,
+        fontFamily: "var(--font-inter), sans-serif",
+        fontSize: '13px',
+        fontWeight: 700,
+        cursor: 'pointer',
+        background: bgColor,
+        color,
+        transition: 'all 0.15s',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        justifyContent: 'center',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = `0 4px 16px ${bgColor}`; }}
+      onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function EmptyState({ icon, text, buttonText }: { icon: string; text: string; buttonText?: string }) {
+  return (
+    <div style={{ padding: '32px', maxWidth: '680px', margin: '0 auto', width: '100%', textAlign: 'center', paddingTop: '80px' }}>
+      <div style={{ fontSize: '44px', marginBottom: '14px', opacity: 0.5 }}>{icon}</div>
+      <p style={{ fontSize: '15px', color: 'rgba(232,234,242,0.45)' }}>{text}</p>
+      {buttonText && (
+        <button
+          onClick={() => window.location.hash = '#add'}
           style={{
-            padding: '14px 22px',
-            borderRadius: '12px',
-            border: '1px solid rgba(110,231,183,0.3)',
-            fontFamily: "'Syne',sans-serif",
-            fontSize: '14px',
+            marginTop: '20px',
+            padding: '12px 22px',
+            borderRadius: '11px',
+            border: 'none',
+            fontFamily: "var(--font-inter), sans-serif",
+            fontSize: '13px',
             fontWeight: 700,
             cursor: 'pointer',
-            background: 'rgba(110,231,183,0.1)',
-            color: 'var(--accent)',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            justifyContent: 'center',
-          }}
-          onMouseEnter={e => {
-            (e.target as HTMLButtonElement).style.background = 'rgba(110,231,183,0.2)';
-            (e.target as HTMLButtonElement).style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={e => {
-            (e.target as HTMLButtonElement).style.background = 'rgba(110,231,183,0.1)';
-            (e.target as HTMLButtonElement).style.transform = 'translateY(0)';
+            background: 'linear-gradient(135deg, #6EE7B7, #34d399)',
+            color: '#0a0c10',
           }}
         >
-          ✅ Thuộc rồi
+          {buttonText}
         </button>
-      </div>
+      )}
     </div>
   );
 }

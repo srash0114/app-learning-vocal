@@ -124,318 +124,168 @@ export function AddWordsPanel() {
   }
 
   return (
-    <div style={{ padding: '32px', maxWidth: '860px', margin: '0 auto', width: '100%' }}>
-      {/* Single word lookup */}
-      <div style={{ marginBottom: '32px' }}>
-        <div
-          style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '3px',
-            textTransform: 'uppercase',
-            color: 'var(--muted)',
-            marginBottom: '14px',
-          }}
-        >
-          Nhập từng từ + AI giải nghĩa
-        </div>
+    <div style={{ padding: '28px 28px', maxWidth: '800px', margin: '0 auto', width: '100%' }}>
 
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '14px' }}>
+      {/* ── Single word lookup ── */}
+      <Section label="Tra từ bằng AI">
+        <div style={{ display: 'flex', gap: '8px' }}>
           <input
             type="text"
             value={wordInput}
             onChange={e => setWordInput(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && lookupWord()}
-            placeholder="Nhập từ tiếng Anh... (vd: resilient)"
+            placeholder="Nhập từ tiếng Anh… (vd: resilient)"
             style={{
               flex: 1,
-              background: 'var(--surface)',
-              border: '1.5px solid var(--border)',
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: '12px',
-              padding: '14px 18px',
-              fontFamily: "var(--font-inter), sans-serif",
-              fontSize: '16px',
+              padding: '13px 16px',
+              fontFamily: "'Instrument Sans', sans-serif",
+              fontSize: '15px',
               color: 'var(--text)',
               outline: 'none',
-              transition: 'border-color 0.2s, box-shadow 0.2s',
+              transition: 'border-color 0.18s, box-shadow 0.18s',
             }}
             onFocus={e => {
-              e.currentTarget.style.borderColor = 'var(--accent)';
-              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(110,231,183,0.1)';
+              e.currentTarget.style.borderColor = 'rgba(110,231,183,0.5)';
+              e.currentTarget.style.boxShadow = '0 0 0 3px rgba(110,231,183,0.08)';
             }}
             onBlur={e => {
-              e.currentTarget.style.borderColor = 'var(--border)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           />
-          <button
-            onClick={lookupWord}
-            disabled={loading}
-            style={{
-              padding: '14px 22px',
-              borderRadius: '12px',
-              border: 'none',
-              fontFamily: "var(--font-inter), sans-serif",
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: loading ? 'not-allowed' : 'pointer',
-              background: 'var(--accent)',
-              color: '#0d0f14',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              whiteSpace: 'nowrap',
-              opacity: loading ? 0.5 : 1,
-            }}
-          >
-            {loading ? '⏳ Đang tra...' : '✨ AI Tra từ'}
-          </button>
+          <PrimaryButton onClick={lookupWord} disabled={loading}>
+            {loading ? '⏳ Đang tra…' : '✦ Tra từ'}
+          </PrimaryButton>
         </div>
 
-        {/* AI Box */}
+        {/* AI result box */}
         {showAiBox && (
           <div
             style={{
-              background: 'linear-gradient(135deg, rgba(110,231,183,0.05), rgba(129,140,248,0.05))',
-              border: '1px solid rgba(110,231,183,0.2)',
+              marginTop: '14px',
               borderRadius: '16px',
-              padding: '20px',
-              marginTop: '16px',
-              animation: 'fadeUp 0.3s ease',
+              border: '1px solid rgba(110,231,183,0.2)',
+              background: 'linear-gradient(135deg, rgba(110,231,183,0.04), rgba(129,140,248,0.04))',
+              overflow: 'hidden',
+              animation: 'fadeUp 0.25s ease',
             }}
           >
+            {/* Header bar */}
             <div
               style={{
+                padding: '10px 18px',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                fontFamily: "var(--font-inter), sans-serif",
-                fontSize: '12px',
+                fontSize: '11px',
                 fontWeight: 700,
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
-                color: 'var(--accent)',
-                marginBottom: '14px',
+                color: '#6EE7B7',
               }}
             >
-              ⚡ AI giải nghĩa
+              <span style={{ fontSize: '14px' }}>⚡</span> Kết quả AI
             </div>
 
-            {!pendingWord ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--muted)', fontSize: '14px' }}>
-                <div className="spinner"></div>
-                {loading ? 'Đang tra nghĩa...' : 'Tra từ không thành công'}
-              </div>
-            ) : (
-              <>
-                <div style={{ marginBottom: '10px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Từ</div>
-                  <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '24px', fontWeight: 700, color: 'var(--accent)' }}>
-                    {pendingWord.word}
-                  </div>
+            <div style={{ padding: '18px' }}>
+              {!pendingWord ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--muted)', fontSize: '14px', padding: '8px 0' }}>
+                  <div className="spinner" />
+                  {loading ? 'Đang tra nghĩa…' : 'Tra từ không thành công'}
                 </div>
-
-                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', marginBottom: '10px' }}>
-                  <div style={{ flex: 1, minWidth: '150px' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Phiên âm</div>
-                    <div style={{ fontSize: '15px', color: 'var(--accent2)', fontStyle: 'italic' }}>
+              ) : (
+                <>
+                  {/* Word + phonetic */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px', marginBottom: '14px' }}>
+                    <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '28px', fontWeight: 800, color: '#e8eaf2', letterSpacing: '-0.5px' }}>
+                      {pendingWord.word}
+                    </div>
+                    <div style={{ fontSize: '14px', color: '#818CF8', fontStyle: 'italic' }}>
                       {pendingWord.phonetic}
                     </div>
-                  </div>
-                  <div style={{ flex: 1, minWidth: '150px' }}>
-                    <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Loại từ</div>
-                    <div style={{ fontSize: '15px', color: 'var(--warn)' }}>
+                    <div style={{ marginLeft: 'auto', padding: '3px 10px', borderRadius: '6px', background: 'rgba(251,191,36,0.12)', color: '#fbbf24', fontSize: '11px', fontWeight: 600 }}>
                       {pendingWord.type}
                     </div>
                   </div>
-                </div>
 
-                <div style={{ marginBottom: '10px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Nghĩa tiếng Việt</div>
-                  <div style={{ fontSize: '17px', fontWeight: 500, color: 'var(--text)' }}>
-                    {pendingWord.meaning}
+                  {/* Meaning */}
+                  <div style={{ marginBottom: '12px' }}>
+                    <FieldLabel>Nghĩa tiếng Việt</FieldLabel>
+                    <div style={{ fontSize: '16px', fontWeight: 600, color: '#e8eaf2' }}>{pendingWord.meaning}</div>
                   </div>
-                </div>
 
-                <div style={{ marginBottom: '10px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Ví dụ</div>
-                  <div style={{ fontSize: '15px', color: 'var(--muted)', fontStyle: 'italic' }}>
-                    {pendingWord.example}
+                  {/* Example */}
+                  <div style={{ marginBottom: '14px', padding: '12px 14px', borderRadius: '10px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                    <FieldLabel>Ví dụ</FieldLabel>
+                    <div style={{ fontSize: '14px', color: 'rgba(232,234,242,0.65)', fontStyle: 'italic', lineHeight: 1.6 }}>{pendingWord.example}</div>
+                    {pendingWord.example_vi && (
+                      <div style={{ fontSize: '12px', color: 'rgba(232,234,242,0.35)', marginTop: '4px' }}>{pendingWord.example_vi}</div>
+                    )}
                   </div>
-                </div>
 
-                <div style={{ marginBottom: '14px' }}>
-                  <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Dịch</div>
-                  <div style={{ fontSize: '13px', color: 'var(--muted)' }}>
-                    {pendingWord.example_vi}
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <PrimaryButton onClick={confirmAddWord}>✦ Thêm vào danh sách</PrimaryButton>
+                    <GhostButton onClick={resetAiBox}>Hủy</GhostButton>
                   </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '10px', marginTop: '14px' }}>
-                  <button
-                    onClick={confirmAddWord}
-                    style={{
-                      padding: '14px 22px',
-                      borderRadius: '12px',
-                      border: 'none',
-                      fontFamily: "var(--font-inter), sans-serif",
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      background: 'var(--accent)',
-                      color: '#0d0f14',
-                      transition: 'all 0.2s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    ✅ Thêm vào danh sách
-                  </button>
-                  <button
-                    onClick={resetAiBox}
-                    style={{
-                      padding: '14px 22px',
-                      borderRadius: '12px',
-                      border: '1px solid var(--border)',
-                      fontFamily: "var(--font-inter), sans-serif",
-                      fontSize: '14px',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      background: 'var(--surface2)',
-                      color: 'var(--text)',
-                      transition: 'all 0.2s',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                    }}
-                  >
-                    ✕ Hủy
-                  </button>
-                </div>
-              </>
-            )}
+                </>
+              )}
+            </div>
           </div>
         )}
-      </div>
+      </Section>
 
-      {/* Bulk import */}
-      <div style={{ marginBottom: '32px' }}>
+      {/* ── Bulk import ── */}
+      <Section label="Nhập hàng loạt">
         <div
           style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '3px',
-            textTransform: 'uppercase',
-            color: 'var(--muted)',
-            marginBottom: '14px',
-          }}
-        >
-          Nhập danh sách hàng loạt
-        </div>
-
-        <div
-          style={{
-            background: 'var(--surface)',
-            border: '1.5px dashed var(--border)',
+            background: 'rgba(255,255,255,0.03)',
+            border: '1.5px dashed rgba(255,255,255,0.1)',
             borderRadius: '14px',
-            padding: '20px',
+            padding: '16px',
             transition: 'border-color 0.2s',
           }}
         >
           <textarea
             value={bulkInput}
             onChange={e => setBulkInput(e.target.value)}
-            placeholder={'Nhập mỗi từ một dòng:\napple\nbanana\ninnovation\n...'}
+            placeholder={'Nhập mỗi từ một dòng:\napple\nbanana\ninnovation\n…'}
             style={{
               width: '100%',
               background: 'transparent',
               border: 'none',
               outline: 'none',
               color: 'var(--text)',
-              fontFamily: "var(--font-inter), sans-serif",
+              fontFamily: "'Instrument Sans', sans-serif",
               fontSize: '14px',
-              lineHeight: '1.7',
+              lineHeight: '1.8',
               resize: 'vertical',
-              minHeight: '120px',
+              minHeight: '110px',
             }}
           />
-          <div
-            style={{
-              fontSize: '12px',
-              color: 'var(--muted)',
-              marginTop: '10px',
-              paddingTop: '10px',
-              borderTop: '1px solid var(--border)',
-            }}
-          >
-            Mỗi từ một dòng · AI sẽ tự động tra nghĩa từng từ
+          <div style={{ fontSize: '11px', color: 'rgba(232,234,242,0.3)', paddingTop: '10px', borderTop: '1px solid rgba(255,255,255,0.05)', marginTop: '6px', letterSpacing: '0.3px' }}>
+            Mỗi từ một dòng · AI sẽ tự động tra nghĩa
           </div>
         </div>
-
-        <div style={{ marginTop: '12px', display: 'flex', gap: '10px' }}>
-          <button
-            onClick={bulkImport}
-            disabled={bulkLoading}
-            style={{
-              padding: '14px 22px',
-              borderRadius: '12px',
-              border: 'none',
-              fontFamily: "var(--font-inter), sans-serif",
-              fontSize: '14px',
-              fontWeight: 700,
-              cursor: bulkLoading ? 'not-allowed' : 'pointer',
-              background: 'var(--accent)',
-              color: '#0d0f14',
-              transition: 'all 0.2s',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              opacity: bulkLoading ? 0.5 : 1,
-            }}
-          >
-            📋 Nhập hàng loạt
-          </button>
+        <div style={{ marginTop: '10px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <PrimaryButton onClick={bulkImport} disabled={bulkLoading}>
+            {bulkLoading ? '⏳ Đang nhập…' : '▣ Nhập hàng loạt'}
+          </PrimaryButton>
           {bulkStatus && (
-            <div
-              style={{
-                fontSize: '13px',
-                color: 'var(--muted)',
-                alignSelf: 'center',
-              }}
-            >
-              {bulkStatus}
-            </div>
+            <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{bulkStatus}</span>
           )}
         </div>
-      </div>
+      </Section>
 
-      {/* Word list */}
-      <div style={{ marginBottom: '32px' }}>
-        <div
-          style={{
-            fontFamily: "var(--font-inter), sans-serif",
-            fontSize: '11px',
-            fontWeight: 700,
-            letterSpacing: '3px',
-            textTransform: 'uppercase',
-            color: 'var(--muted)',
-            marginBottom: '14px',
-          }}
-        >
-          Danh sách từ của bạn ({words.length} từ)
-        </div>
-
+      {/* ── Word list ── */}
+      <Section label={`Danh sách từ · ${words.length} từ`}>
         {words.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--muted)' }}>
-            <div style={{ fontSize: '48px', marginBottom: '16px' }}>📖</div>
-            <p style={{ fontSize: '15px' }}>Chưa có từ nào. Hãy thêm từ đầu tiên!</p>
-          </div>
+          <EmptyState icon="📖" text="Chưa có từ nào. Hãy thêm từ đầu tiên!" />
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {[...words].reverse().map((w, ri) => {
               const i = words.length - 1 - ri;
               return (
@@ -444,60 +294,45 @@ export function AddWordsPanel() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '16px',
-                    background: 'var(--surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '14px',
-                    padding: '16px 20px',
-                    transition: 'all 0.2s',
-                    cursor: 'pointer',
-                    position: 'relative',
-                    overflow: 'hidden',
+                    gap: '14px',
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    borderRadius: '12px',
+                    padding: '14px 16px',
+                    transition: 'background 0.15s, border-color 0.15s',
                   }}
                   onMouseEnter={e => {
                     const el = e.currentTarget as HTMLDivElement;
-                    el.style.borderColor = 'rgba(110,231,183,0.3)';
-                    el.style.background = 'var(--surface2)';
+                    el.style.background = 'rgba(110,231,183,0.05)';
+                    el.style.borderColor = 'rgba(110,231,183,0.2)';
                   }}
                   onMouseLeave={e => {
                     const el = e.currentTarget as HTMLDivElement;
-                    el.style.borderColor = 'var(--border)';
-                    el.style.background = 'var(--surface)';
+                    el.style.background = 'rgba(255,255,255,0.03)';
+                    el.style.borderColor = 'rgba(255,255,255,0.07)';
                   }}
                 >
-                  <div style={{ borderLeft: '3px solid var(--accent)', paddingLeft: '10px' }}>
-                    <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '18px', fontWeight: 700 }}>
+                  {/* Accent bar + word */}
+                  <div style={{ borderLeft: '2px solid #6EE7B7', paddingLeft: '12px', minWidth: 0 }}>
+                    <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '16px', fontWeight: 700, color: '#e8eaf2' }}>
                       {w.word}
                     </div>
-                    <div
-                      style={{
-                        fontSize: '13px',
-                        color: 'var(--accent2)',
-                        fontStyle: 'italic',
-                        marginTop: '2px',
-                      }}
-                    >
+                    <div style={{ fontSize: '12px', color: '#818CF8', fontStyle: 'italic', marginTop: '1px' }}>
                       {w.phonetic}
                     </div>
                   </div>
 
-                  <div style={{ flex: 1, fontSize: '14px', color: 'var(--muted)' }}>
+                  {/* Meaning */}
+                  <div style={{ flex: 1, fontSize: '13px', color: 'rgba(232,234,242,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {w.meaning}
                   </div>
 
-                  <div
-                    style={{
-                      fontSize: '11px',
-                      padding: '3px 10px',
-                      borderRadius: '100px',
-                      background: 'rgba(129,140,248,0.1)',
-                      color: 'var(--accent2)',
-                      fontWeight: 500,
-                    }}
-                  >
+                  {/* Type badge */}
+                  <div style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '5px', background: 'rgba(129,140,248,0.1)', color: '#818CF8', fontWeight: 600, whiteSpace: 'nowrap' }}>
                     {w.type}
                   </div>
 
+                  {/* Delete */}
                   <button
                     onClick={e => {
                       e.stopPropagation();
@@ -506,23 +341,135 @@ export function AddWordsPanel() {
                     }}
                     style={{
                       background: 'transparent',
-                      color: 'var(--danger)',
-                      border: '1px solid rgba(248,113,113,0.3)',
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      borderRadius: '8px',
+                      color: 'rgba(248,113,113,0.6)',
+                      border: '1px solid rgba(248,113,113,0.2)',
+                      padding: '5px 10px',
+                      fontSize: '11px',
+                      borderRadius: '7px',
                       cursor: 'pointer',
-                      transition: 'all 0.2s',
+                      transition: 'all 0.15s',
+                      flexShrink: 0,
+                    }}
+                    onMouseEnter={e => {
+                      const el = e.currentTarget;
+                      el.style.color = '#f87171';
+                      el.style.borderColor = 'rgba(248,113,113,0.5)';
+                      el.style.background = 'rgba(248,113,113,0.08)';
+                    }}
+                    onMouseLeave={e => {
+                      const el = e.currentTarget;
+                      el.style.color = 'rgba(248,113,113,0.6)';
+                      el.style.borderColor = 'rgba(248,113,113,0.2)';
+                      el.style.background = 'transparent';
                     }}
                   >
-                    🗑 Xóa
+                    Xóa
                   </button>
                 </div>
               );
             })}
           </div>
         )}
+      </Section>
+    </div>
+  );
+}
+
+/* ── Shared helpers ── */
+
+function Section({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: '28px' }}>
+      <div
+        style={{
+          fontSize: '10px',
+          fontWeight: 700,
+          letterSpacing: '2.5px',
+          textTransform: 'uppercase',
+          color: 'rgba(232,234,242,0.3)',
+          marginBottom: '12px',
+          fontFamily: "var(--font-inter), sans-serif",
+        }}
+      >
+        {label}
       </div>
+      {children}
+    </div>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'rgba(232,234,242,0.3)', marginBottom: '4px' }}>
+      {children}
+    </div>
+  );
+}
+
+function PrimaryButton({ onClick, disabled, children }: { onClick: () => void; disabled?: boolean; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        padding: '12px 20px',
+        borderRadius: '10px',
+        border: 'none',
+        fontFamily: "var(--font-inter), sans-serif",
+        fontSize: '13px',
+        fontWeight: 700,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        background: 'linear-gradient(135deg, #6EE7B7, #34d399)',
+        color: '#0a0c10',
+        transition: 'opacity 0.15s, transform 0.15s',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '7px',
+        whiteSpace: 'nowrap',
+        opacity: disabled ? 0.45 : 1,
+        flexShrink: 0,
+      }}
+      onMouseEnter={e => { if (!disabled) (e.currentTarget).style.transform = 'translateY(-1px)'; }}
+      onMouseLeave={e => { (e.currentTarget).style.transform = 'translateY(0)'; }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function GhostButton({ onClick, children }: { onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: '12px 18px',
+        borderRadius: '10px',
+        border: '1px solid rgba(255,255,255,0.1)',
+        fontFamily: "var(--font-inter), sans-serif",
+        fontSize: '13px',
+        fontWeight: 600,
+        cursor: 'pointer',
+        background: 'rgba(255,255,255,0.04)',
+        color: 'rgba(232,234,242,0.6)',
+        transition: 'all 0.15s',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '7px',
+        flexShrink: 0,
+      }}
+      onMouseEnter={e => { (e.currentTarget).style.borderColor = 'rgba(255,255,255,0.2)'; (e.currentTarget).style.color = '#e8eaf2'; }}
+      onMouseLeave={e => { (e.currentTarget).style.borderColor = 'rgba(255,255,255,0.1)'; (e.currentTarget).style.color = 'rgba(232,234,242,0.6)'; }}
+    >
+      {children}
+    </button>
+  );
+}
+
+function EmptyState({ icon, text }: { icon: string; text: string }) {
+  return (
+    <div style={{ textAlign: 'center', padding: '50px 20px', color: 'rgba(232,234,242,0.35)' }}>
+      <div style={{ fontSize: '40px', marginBottom: '12px', opacity: 0.6 }}>{icon}</div>
+      <p style={{ fontSize: '14px' }}>{text}</p>
     </div>
   );
 }
