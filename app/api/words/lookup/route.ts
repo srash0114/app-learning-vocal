@@ -4,16 +4,14 @@ interface RequestBody {
   word: string;
 }
 
-interface ClaudeMessage {
+interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
 
-async function callClaude(word: string): Promise<string> {
-  const messages: ClaudeMessage[] = [
-    {
-      role: 'user',
-      content: `Tra nghĩa từ tiếng Anh: "${word}"
+async function callGemini(word: string): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY || '';
+  const prompt = `Tra nghĩa từ tiếng Anh: "${word}"
 Trả lời CHÍNH XÁC theo JSON sau (không có markdown, không giải thích thêm):
 {
   "word": "${word}",
@@ -22,29 +20,44 @@ Trả lời CHÍNH XÁC theo JSON sau (không có markdown, không giải thích
   "meaning": "nghĩa chính bằng tiếng Việt (ngắn gọn, 1-2 nghĩa)",
   "example": "1 câu ví dụ tiếng Anh tự nhiên",
   "example_vi": "dịch câu ví dụ ra tiếng Việt"
-}`,
-    },
-  ];
+}`;
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY || '',
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1000,
-      messages,
-    }),
-  });
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              {
+                text: prompt,
+              },
+            ],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 1000,
+        },
+      }),
+    }
+  );
 
   if (!response.ok) {
-    throw new Error(`Claude API error: ${response.statusText}`);
+    const errorData = await response.json().catch(() => ({})) as Record<string, unknown>;
+    console.error('Gemini API Error:', {
+      status: response.status,
+      statusText: response.statusText,
+      error: errorData,
+    });
+    throw new Error(`Gemini API error: ${response.statusText}`);
   }
 
-  const data = await response.json() as { content?: Array<{ text?: string }> };
-  const text = data.content?.[0]?.text || '';
+  const data = await response.json() as { candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }> };
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
   return text;
 }
 
@@ -60,7 +73,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await callClaude(word);
+    const result = await callGemini(word);
     
     // Clean markdown formatting if present
     const cleaned = result.replace(/```json|```/g, '').trim();

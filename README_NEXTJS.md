@@ -1,6 +1,6 @@
 # WordMind - Ứng dụng Học Từ Vựng Tiếng Anh
 
-Ứng dụng web hiện đại của WordMind được xây dựng bằng **Next.js 16**, **React 19**, và **TypeScript**, tích hợp với **Claude AI** để tra cứu và giải nghĩa từ vựng.
+Ứng dụng web hiện đại của WordMind được xây dựng bằng **Next.js 16**, **React 19**, và **TypeScript**, tích hợp với **Google Gemini AI** để tra cứu và giải nghĩa từ vựng.
 
 ## 🚀 Tính năng
 
@@ -29,8 +29,9 @@ cp .env.local.example .env.local
 3. **Thêm API Key**:
 Mở `.env.local` và thay thế:
 ```
-ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxx
+GEMINI_API_KEY=your_api_key_from_google_ai_studio
 ```
+Lấy API key tại: https://aistudio.google.com/app/apikey
 
 4. **Cài đặt dependencies**:
 ```bash
@@ -72,7 +73,7 @@ app-vocal/
 ## 🔌 API Endpoints
 
 ### POST `/api/words/lookup`
-Tra cứu từ đơn lẻ
+Tra cứu từ đơn lẻ (sử dụng Google Gemini API)
 ```json
 {
   "word": "resilient"
@@ -92,7 +93,7 @@ Tra cứu từ đơn lẻ
 ```
 
 ### POST `/api/words/bulk`
-Tra cứu nhiều từ
+Tra cứu nhiều từ (sử dụng Google Gemini API)
 ```json
 {
   "words": ["apple", "banana", "innovation"]
@@ -146,7 +147,7 @@ npm run start
 vercel
 ```
 
-Nhớ thêm `ANTHROPIC_API_KEY` vào environment variables trên Vercel.
+Nhớ thêm `GEMINI_API_KEY` vào environment variables trên Vercel.
 
 ## 📝 License
 
