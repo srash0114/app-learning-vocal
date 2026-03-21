@@ -73,8 +73,6 @@ export function WordProvider({ children }: { children: React.ReactNode }) {
     bulkAddWords,
   };
 
-  if (!loaded) return children; // Avoid hydration mismatch
-
   return <WordContext.Provider value={value}>{children}</WordContext.Provider>;
 }
 
