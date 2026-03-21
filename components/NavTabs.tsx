@@ -35,7 +35,7 @@ export function NavTabs({ activeTab, onTabChange }: NavTabsProps) {
             border: 'none',
             borderBottom: activeTab === tab.id ? '2px solid var(--accent)' : '2px solid transparent',
             color: activeTab === tab.id ? 'var(--accent)' : 'var(--muted)',
-            fontFamily: "'Instrument Sans',sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: '14px',
             fontWeight: 500,
             cursor: 'pointer',

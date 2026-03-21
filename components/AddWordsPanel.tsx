@@ -129,7 +129,7 @@ export function AddWordsPanel() {
       <div style={{ marginBottom: '32px' }}>
         <div
           style={{
-            fontFamily: "'Syne',sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: '11px',
             fontWeight: 700,
             letterSpacing: '3px',
@@ -154,7 +154,7 @@ export function AddWordsPanel() {
               border: '1.5px solid var(--border)',
               borderRadius: '12px',
               padding: '14px 18px',
-              fontFamily: "'Instrument Sans',sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: '16px',
               color: 'var(--text)',
               outline: 'none',
@@ -176,7 +176,7 @@ export function AddWordsPanel() {
               padding: '14px 22px',
               borderRadius: '12px',
               border: 'none',
-              fontFamily: "'Syne',sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: '14px',
               fontWeight: 700,
               cursor: loading ? 'not-allowed' : 'pointer',
@@ -211,7 +211,7 @@ export function AddWordsPanel() {
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                fontFamily: "'Syne',sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: '12px',
                 fontWeight: 700,
                 letterSpacing: '2px',
@@ -232,7 +232,7 @@ export function AddWordsPanel() {
               <>
                 <div style={{ marginBottom: '10px' }}>
                   <div style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Từ</div>
-                  <div style={{ fontFamily: "'Syne',sans-serif", fontSize: '24px', fontWeight: 700, color: 'var(--accent)' }}>
+                  <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '24px', fontWeight: 700, color: 'var(--accent)' }}>
                     {pendingWord.word}
                   </div>
                 </div>
@@ -280,7 +280,7 @@ export function AddWordsPanel() {
                       padding: '14px 22px',
                       borderRadius: '12px',
                       border: 'none',
-                      fontFamily: "'Syne',sans-serif",
+                      fontFamily: "var(--font-inter), sans-serif",
                       fontSize: '14px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -300,7 +300,7 @@ export function AddWordsPanel() {
                       padding: '14px 22px',
                       borderRadius: '12px',
                       border: '1px solid var(--border)',
-                      fontFamily: "'Syne',sans-serif",
+                      fontFamily: "var(--font-inter), sans-serif",
                       fontSize: '14px',
                       fontWeight: 700,
                       cursor: 'pointer',
@@ -325,7 +325,7 @@ export function AddWordsPanel() {
       <div style={{ marginBottom: '32px' }}>
         <div
           style={{
-            fontFamily: "'Syne',sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: '11px',
             fontWeight: 700,
             letterSpacing: '3px',
@@ -356,7 +356,7 @@ export function AddWordsPanel() {
               border: 'none',
               outline: 'none',
               color: 'var(--text)',
-              fontFamily: "'Instrument Sans',sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: '14px',
               lineHeight: '1.7',
               resize: 'vertical',
@@ -384,7 +384,7 @@ export function AddWordsPanel() {
               padding: '14px 22px',
               borderRadius: '12px',
               border: 'none',
-              fontFamily: "'Syne',sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: '14px',
               fontWeight: 700,
               cursor: bulkLoading ? 'not-allowed' : 'pointer',
@@ -417,7 +417,7 @@ export function AddWordsPanel() {
       <div style={{ marginBottom: '32px' }}>
         <div
           style={{
-            fontFamily: "'Syne',sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: '11px',
             fontWeight: 700,
             letterSpacing: '3px',
@@ -466,7 +466,7 @@ export function AddWordsPanel() {
                   }}
                 >
                   <div style={{ borderLeft: '3px solid var(--accent)', paddingLeft: '10px' }}>
-                    <div style={{ fontFamily: "'Syne',sans-serif", fontSize: '18px', fontWeight: 700 }}>
+                    <div style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: '18px', fontWeight: 700 }}>
                       {w.word}
                     </div>
                     <div

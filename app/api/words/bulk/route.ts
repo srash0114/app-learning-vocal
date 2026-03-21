@@ -1,16 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getNextApiKey } from '@/lib/gemini-keys';
 
 interface RequestBody {
   words: string[];
 }
 
 async function callGemini(word: string): Promise<string> {
-  const apiKey = process.env.GEMINI_API_KEY || '';
+  const apiKey = await getNextApiKey();
   const prompt = `Tra nghĩa từ tiếng Anh: "${word}". Trả lời JSON không có markdown:
 {"word":"${word}","phonetic":"/IPA/","type":"loại từ tiếng Việt","meaning":"nghĩa tiếng Việt","example":"ví dụ tiếng Anh","example_vi":"dịch tiếng Việt"}`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-preview:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: {

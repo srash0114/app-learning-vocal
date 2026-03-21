@@ -10,18 +10,24 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export function FlashcardPanel() {
-  const { words, updateWordStatus, saveAll } = useWords();
+  const { words, updateWordStatus, deleteWord, saveAll } = useWords();
   const { show: showToast } = useToast();
 
   const [deck, setDeck] = useState<Word[]>([]);
   const [index, setIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
+  const [deckSize, setDeckSize] = useState(0);
 
+  // Initialize deck only when word count changes (add/remove), not on status updates
   useEffect(() => {
-    setDeck(shuffle([...words]));
-    setIndex(0);
-    setIsFlipped(false);
-  }, [words]);
+    if (words.length !== deckSize) {
+      // New words added or removed, reshuffle
+      setDeck(shuffle([...words]));
+      setIndex(0);
+      setIsFlipped(false);
+      setDeckSize(words.length);
+    }
+  }, [words.length]);
 
   if (!words.length) {
     return (
@@ -46,7 +52,7 @@ export function FlashcardPanel() {
             padding: '14px 22px',
             borderRadius: '12px',
             border: 'none',
-            fontFamily: "'Syne',sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: '14px',
             fontWeight: 700,
             cursor: 'pointer',
@@ -97,9 +103,9 @@ export function FlashcardPanel() {
 
     if (isEasy) {
       if (wordIndex >= 0) {
-        updateWordStatus(wordIndex, 'mastered');
+        deleteWord(wordIndex);
       }
-      showToast('🎉 Tuyệt! +10 điểm');
+      showToast('✨ Đã xóa từ này!');
     } else {
       if (wordIndex >= 0) {
         updateWordStatus(wordIndex, 'learning');
@@ -131,7 +137,7 @@ export function FlashcardPanel() {
       >
         <div
           style={{
-            fontFamily: "'Syne',sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: '18px',
             fontWeight: 700,
           }}
@@ -204,7 +210,7 @@ export function FlashcardPanel() {
           >
             <div
               style={{
-                fontFamily: "'Syne',sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 fontSize: 'clamp(36px,6vw,64px)',
                 fontWeight: 800,
                 letterSpacing: '-1.5px',

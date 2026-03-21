@@ -52,7 +52,7 @@ export function QuizPanel() {
             padding: '14px 22px',
             borderRadius: '12px',
             border: 'none',
-            fontFamily: "'Syne',sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: '14px',
             fontWeight: 700,
             cursor: 'pointer',
@@ -141,7 +141,7 @@ export function QuizPanel() {
         >
           <div
             style={{
-              fontFamily: "'Syne',sans-serif",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: '64px',
               fontWeight: 800,
               background: 'linear-gradient(135deg,var(--accent),var(--accent2))',
@@ -258,7 +258,7 @@ export function QuizPanel() {
         </div>
         <div
           style={{
-            fontFamily: "'Syne',sans-serif",
+            fontFamily: "var(--font-inter), sans-serif",
             fontSize: 'clamp(32px,5vw,56px)',
             fontWeight: 800,
             letterSpacing: '-1.5px',
@@ -319,7 +319,7 @@ export function QuizPanel() {
                 cursor: answered ? 'not-allowed' : 'pointer',
                 textAlign: 'left',
                 transition: 'all 0.2s',
-                fontFamily: "'Instrument Sans',sans-serif",
+                fontFamily: "var(--font-inter), sans-serif",
                 transform: !answered ? 'translateY(0)' : undefined,
               }}
               onMouseEnter={e => {
