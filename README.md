@@ -1,13 +1,13 @@
 # WordMind — Ứng dụng học từ vựng tiếng Anh
 
-Ứng dụng học từ vựng tiếng Anh được xây dựng bằng **Next.js 15**, hỗ trợ tra từ bằng AI, thẻ nhớ lật, kiểm tra trắc nghiệm và điền từ.
+Ứng dụng học từ vựng tiếng Anh được xây dựng bằng **Next.js 15**, hỗ trợ tra từ bằng AI (Gemini), thẻ nhớ lật, kiểm tra trắc nghiệm và điền từ.
 
 ---
 
 ## Tính năng
 
 ### Thêm từ
-- Tra nghĩa từ đơn bằng AI (Claude) — tự động lấy phiên âm, loại từ, nghĩa tiếng Việt, câu ví dụ
+- Tra nghĩa từ đơn bằng **Gemini AI** — tự động lấy phiên âm, loại từ, nghĩa tiếng Việt, câu ví dụ
 - Nhập hàng loạt (mỗi từ một dòng), AI tra từng từ tự động
 - Nghe phát âm chuẩn bằng Web Speech API
 - Xem và xóa danh sách từ đã lưu
@@ -41,7 +41,8 @@
 |---|---|
 | Next.js 15 (App Router) | Framework |
 | TypeScript | Type safety |
-| Claude AI (Anthropic) | Tra nghĩa từ tự động |
+| Gemini AI (Google) | Tra nghĩa từ tự động |
+| API Key Rotation | Xoay vòng 4 key để tránh vượt rate limit |
 | Web Speech API | Phát âm tiếng Anh |
 | localStorage | Lưu dữ liệu từ vựng |
 
@@ -53,14 +54,20 @@
 # Cài dependencies
 npm install
 
-# Tạo file .env.local và thêm API key
-ANTHROPIC_API_KEY=your_api_key_here
+# Tạo file .env.local và thêm các Gemini API key
+GEMINI_API_KEY_1=your_key_1
+GEMINI_API_KEY_2=your_key_2
+GEMINI_API_KEY_3=your_key_3
+GEMINI_API_KEY_4=your_key_4
 
 # Chạy dev server
 npm run dev
 ```
 
 Mở [http://localhost:3000](http://localhost:3000) trên trình duyệt.
+
+> Có thể dùng ít hơn 4 key, hệ thống tự động bỏ qua key rỗng.
+> Mỗi key giới hạn ~15 req/phút, xoay vòng cách nhau 4 giây để tránh bị block.
 
 ---
 
@@ -76,11 +83,15 @@ components/       # UI components
   FlashcardPanel.tsx
   QuizPanel.tsx
   FillQuizPanel.tsx
-lib/              # Logic dùng chung (context, types, speak, toast)
+lib/              # Logic dùng chung
+  gemini-keys.ts  # Quản lý xoay vòng API key
+  context.tsx     # Global state từ vựng
+  types.ts        # TypeScript types
+  speak.ts        # Web Speech API
 ```
 
 ---
 
 ## Deploy
 
-Dự án được deploy trên **Vercel**. Thêm biến môi trường `ANTHROPIC_API_KEY` trong Vercel Dashboard.
+Dự án được deploy trên **Vercel**. Thêm 4 biến môi trường `GEMINI_API_KEY_1..4` trong Vercel Dashboard.
